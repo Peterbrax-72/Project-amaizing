@@ -1,0 +1,874 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Productivity Hub</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        header {
+            background: white;
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        h1 {
+            color: #667eea;
+            font-size: 2em;
+        }
+
+        .voice-controls {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .voice-btn {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .voice-btn:hover {
+            background: #764ba2;
+            transform: translateY(-2px);
+        }
+
+        .voice-btn.listening {
+            background: #e74c3c;
+            animation: pulse 1s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .tab {
+            background: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: all 0.3s;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .tab.active {
+            background: #667eea;
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0,0,0,0.2);
+        }
+
+        .content-section {
+            display: none;
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            min-height: 500px;
+        }
+
+        .content-section.active {
+            display: block;
+        }
+
+        /* Notes Section */
+        .notes-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .note {
+            background: #fff9e6;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            position: relative;
+        }
+
+        .note h3 {
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .note p {
+            color: #666;
+            line-height: 1.6;
+        }
+
+        .note-actions {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            display: flex;
+            gap: 5px;
+        }
+
+        .note-actions button {
+            background: #e74c3c;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+
+        /* Sticky Notes */
+        .sticky-notes {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .sticky {
+            width: 200px;
+            height: 200px;
+            padding: 15px;
+            border-radius: 5px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+            position: relative;
+            cursor: move;
+        }
+
+        .sticky.yellow { background: #ffd54f; }
+        .sticky.pink { background: #ff80ab; }
+        .sticky.green { background: #69f0ae; }
+        .sticky.blue { background: #40c4ff; }
+
+        /* Calendar */
+        .calendar-customizer {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .calendar-customizer input[type="color"] {
+            width: 60px;
+            height: 40px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .calendar-customizer input[type="file"] {
+            padding: 8px;
+        }
+
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .calendar-header {
+            text-align: center;
+            font-weight: bold;
+            padding: 10px;
+            background: #667eea;
+            color: white;
+            border-radius: 5px;
+        }
+
+        .calendar-day {
+            padding: 15px;
+            border-radius: 5px;
+            min-height: 80px;
+            border: 2px solid #ddd;
+            cursor: pointer;
+            transition: all 0.3s;
+            position: relative;
+        }
+
+        .calendar-day:hover {
+            transform: scale(1.05);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+
+        .calendar-day.has-event {
+            background: #ffd54f;
+            border-color: #667eea;
+        }
+
+        .calendar-day .date {
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .calendar-day .events {
+            font-size: 12px;
+            color: #666;
+        }
+
+        /* Goals Section */
+        .goals-list {
+            margin-top: 20px;
+        }
+
+        .goal-item {
+            background: #f5f5f5;
+            padding: 20px;
+            margin-bottom: 15px;
+            border-radius: 10px;
+            border-left: 5px solid #667eea;
+        }
+
+        .goal-item h3 {
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .goal-progress {
+            width: 100%;
+            height: 20px;
+            background: #e0e0e0;
+            border-radius: 10px;
+            overflow: hidden;
+            margin-top: 10px;
+        }
+
+        .goal-progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+            transition: width 0.3s;
+        }
+
+        /* Forms */
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .form-group input,
+        .form-group textarea,
+        .form-group select {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+
+        .form-group textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+
+        .btn {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: all 0.3s;
+        }
+
+        .btn:hover {
+            background: #764ba2;
+            transform: translateY(-2px);
+        }
+
+        .people-tags {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-top: 10px;
+        }
+
+        .person-tag {
+            background: #667eea;
+            color: white;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 14px;
+        }
+
+        #voiceStatus {
+            color: #666;
+            font-style: italic;
+            margin-left: 10px;
+        }
+
+        .calendar-bg {
+            padding: 20px;
+            border-radius: 10px;
+            background-size: cover;
+            background-position: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🚀 My Productivity Hub</h1>
+            <div class="voice-controls">
+                <button class="voice-btn" id="voiceBtn">
+                    🎤 Voice Command
+                </button>
+                <span id="voiceStatus"></span>
+            </div>
+        </header>
+
+        <div class="tabs">
+            <button class="tab active" onclick="showTab('notes')">📝 Notes</button>
+            <button class="tab" onclick="showTab('sticky')">📌 Sticky Notes</button>
+            <button class="tab" onclick="showTab('calendar')">📅 Calendar</button>
+            <button class="tab" onclick="showTab('goals')">🎯 Goals</button>
+            <button class="tab" onclick="showTab('plans')">📋 Plans</button>
+        </div>
+
+        <!-- Notes Section -->
+        <div id="notes" class="content-section active">
+            <h2>My Notes</h2>
+            <div class="form-group">
+                <label>Title</label>
+                <input type="text" id="noteTitle" placeholder="Enter note title...">
+            </div>
+            <div class="form-group">
+                <label>Content</label>
+                <textarea id="noteContent" placeholder="Write your note here..."></textarea>
+            </div>
+            <button class="btn" onclick="addNote()">Add Note</button>
+            <div class="notes-container" id="notesContainer"></div>
+        </div>
+
+        <!-- Sticky Notes Section -->
+        <div id="sticky" class="content-section">
+            <h2>Sticky Notes Reminders</h2>
+            <div class="form-group">
+                <label>Reminder Text</label>
+                <textarea id="stickyText" placeholder="Quick reminder..."></textarea>
+            </div>
+            <div class="form-group">
+                <label>Color</label>
+                <select id="stickyColor">
+                    <option value="yellow">Yellow</option>
+                    <option value="pink">Pink</option>
+                    <option value="green">Green</option>
+                    <option value="blue">Blue</option>
+                </select>
+            </div>
+            <button class="btn" onclick="addSticky()">Add Sticky Note</button>
+            <div class="sticky-notes" id="stickyContainer"></div>
+        </div>
+
+        <!-- Calendar Section -->
+        <div id="calendar" class="content-section">
+            <h2>My Calendar</h2>
+            <div class="calendar-customizer">
+                <label>Background Color: <input type="color" id="calBgColor" value="#ffffff"></label>
+                <label>Background Image: <input type="file" id="calBgImage" accept="image/*"></label>
+                <button class="btn" onclick="applyCalendarBg()">Apply Background</button>
+            </div>
+            
+            <div class="form-group">
+                <label>Add Event</label>
+                <input type="text" id="eventTitle" placeholder="Event title...">
+            </div>
+            <div class="form-group">
+                <label>Date</label>
+                <input type="date" id="eventDate">
+            </div>
+            <div class="form-group">
+                <label>People Involved</label>
+                <input type="text" id="eventPeople" placeholder="John, Sarah, Mike...">
+            </div>
+            <button class="btn" onclick="addEvent()">Add to Calendar</button>
+
+            <div class="calendar-bg" id="calendarBg">
+                <h3 id="currentMonth"></h3>
+                <div class="calendar-grid" id="calendarGrid"></div>
+            </div>
+        </div>
+
+        <!-- Goals Section -->
+        <div id="goals" class="content-section">
+            <h2>My Goals</h2>
+            <div class="form-group">
+                <label>Goal Title</label>
+                <input type="text" id="goalTitle" placeholder="My goal...">
+            </div>
+            <div class="form-group">
+                <label>Description</label>
+                <textarea id="goalDesc" placeholder="Details about this goal..."></textarea>
+            </div>
+            <div class="form-group">
+                <label>Target Date</label>
+                <input type="date" id="goalDate">
+            </div>
+            <div class="form-group">
+                <label>People Involved</label>
+                <input type="text" id="goalPeople" placeholder="Who's helping you?">
+            </div>
+            <div class="form-group">
+                <label>Progress (%)</label>
+                <input type="number" id="goalProgress" min="0" max="100" value="0">
+            </div>
+            <button class="btn" onclick="addGoal()">Add Goal</button>
+            <div class="goals-list" id="goalsList"></div>
+        </div>
+
+        <!-- Plans Section -->
+        <div id="plans" class="content-section">
+            <h2>My Plans</h2>
+            <div class="form-group">
+                <label>Plan Title</label>
+                <input type="text" id="planTitle" placeholder="Plan title...">
+            </div>
+            <div class="form-group">
+                <label>Description</label>
+                <textarea id="planDesc" placeholder="Plan details..."></textarea>
+            </div>
+            <div class="form-group">
+                <label>Start Date</label>
+                <input type="date" id="planStart">
+            </div>
+            <div class="form-group">
+                <label>End Date</label>
+                <input type="date" id="planEnd">
+            </div>
+            <div class="form-group">
+                <label>Team Members</label>
+                <input type="text" id="planPeople" placeholder="John, Sarah...">
+            </div>
+            <button class="btn" onclick="addPlan()">Add Plan</button>
+            <div class="goals-list" id="plansList"></div>
+        </div>
+    </div>
+
+    <script>
+        // Data Storage
+        let notes = JSON.parse(localStorage.getItem('notes')) || [];
+        let stickies = JSON.parse(localStorage.getItem('stickies')) || [];
+        let events = JSON.parse(localStorage.getItem('events')) || [];
+        let goals = JSON.parse(localStorage.getItem('goals')) || [];
+        let plans = JSON.parse(localStorage.getItem('plans')) || [];
+
+        // Voice Recognition Setup
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        let recognition;
+        let isListening = false;
+
+        if (SpeechRecognition) {
+            recognition = new SpeechRecognition();
+            recognition.continuous = false;
+            recognition.lang = 'en-US';
+
+            recognition.onstart = () => {
+                isListening = true;
+                document.getElementById('voiceBtn').classList.add('listening');
+                document.getElementById('voiceStatus').textContent = 'Listening...';
+            };
+
+            recognition.onend = () => {
+                isListening = false;
+                document.getElementById('voiceBtn').classList.remove('listening');
+                document.getElementById('voiceStatus').textContent = '';
+            };
+
+            recognition.onresult = (event) => {
+                const transcript = event.results[0][0].transcript.toLowerCase();
+                document.getElementById('voiceStatus').textContent = `You said: "${transcript}"`;
+                processVoiceCommand(transcript);
+            };
+
+            recognition.onerror = (event) => {
+                document.getElementById('voiceStatus').textContent = 'Error: ' + event.error;
+            };
+        }
+
+        document.getElementById('voiceBtn').addEventListener('click', () => {
+            if (!recognition) {
+                alert('Voice recognition not supported in your browser. Try Chrome.');
+                return;
+            }
+            if (isListening) {
+                recognition.stop();
+            } else {
+                recognition.start();
+            }
+        });
+
+        // Process Voice Commands
+        function processVoiceCommand(command) {
+            if (command.includes('add note')) {
+                showTab('notes');
+                speak('Opening notes section');
+            } else if (command.includes('add sticky')) {
+                showTab('sticky');
+                speak('Opening sticky notes');
+            } else if (command.includes('show calendar')) {
+                showTab('calendar');
+                speak('Opening calendar');
+            } else if (command.includes('show goals')) {
+                showTab('goals');
+                speak('Opening goals');
+            } else if (command.includes('show plans')) {
+                showTab('plans');
+                speak('Opening plans');
+            } else if (command.includes('create note')) {
+                const text = command.replace('create note', '').trim();
+                document.getElementById('noteTitle').value = 'Voice Note';
+                document.getElementById('noteContent').value = text;
+                speak('Note created. Click add to save.');
+            } else if (command.includes('create reminder')) {
+                showTab('sticky');
+                const text = command.replace('create reminder', '').trim();
+                document.getElementById('stickyText').value = text;
+                speak('Reminder created. Click add to save.');
+            } else {
+                speak('Command not recognized. Try: add note, show calendar, create reminder');
+            }
+        }
+
+        // Text to Speech
+        function speak(text) {
+            const utterance = new SpeechSynthesisUtterance(text);
+            speechSynthesis.speak(utterance);
+        }
+
+        // Tab Switching
+        function showTab(tabName) {
+            document.querySelectorAll('.content-section').forEach(section => {
+                section.classList.remove('active');
+            });
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            document.getElementById(tabName).classList.add('active');
+            event.target.classList.add('active');
+        }
+
+        // Notes Functions
+        function addNote() {
+            const title = document.getElementById('noteTitle').value;
+            const content = document.getElementById('noteContent').value;
+            if (!title || !content) {
+                alert('Please fill in both title and content');
+                return;
+            }
+            notes.push({ id: Date.now(), title, content, date: new Date().toLocaleDateString() });
+            localStorage.setItem('notes', JSON.stringify(notes));
+            document.getElementById('noteTitle').value = '';
+            document.getElementById('noteContent').value = '';
+            renderNotes();
+            speak('Note added successfully');
+        }
+
+        function deleteNote(id) {
+            notes = notes.filter(note => note.id !== id);
+            localStorage.setItem('notes', JSON.stringify(notes));
+            renderNotes();
+        }
+
+        function renderNotes() {
+            const container = document.getElementById('notesContainer');
+            container.innerHTML = notes.map(note => `
+                <div class="note">
+                    <div class="note-actions">
+                        <button onclick="deleteNote(${note.id})">Delete</button>
+                    </div>
+                    <h3>${note.title}</h3>
+                    <p>${note.content}</p>
+                    <small style="color: #999; display: block; margin-top: 10px;">${note.date}</small>
+                </div>
+            `).join('');
+        }
+
+        // Sticky Notes Functions
+        function addSticky() {
+            const text = document.getElementById('stickyText').value;
+            const color = document.getElementById('stickyColor').value;
+            if (!text) {
+                alert('Please enter reminder text');
+                return;
+            }
+            stickies.push({ id: Date.now(), text, color });
+            localStorage.setItem('stickies', JSON.stringify(stickies));
+            document.getElementById('stickyText').value = '';
+            renderStickies();
+            speak('Sticky note added');
+        }
+
+        function deleteSticky(id) {
+            stickies = stickies.filter(s => s.id !== id);
+            localStorage.setItem('stickies', JSON.stringify(stickies));
+            renderStickies();
+        }
+
+        function renderStickies() {
+            const container = document.getElementById('stickyContainer');
+            container.innerHTML = stickies.map(sticky => `
+                <div class="sticky ${sticky.color}">
+                    <button onclick="deleteSticky(${sticky.id})" style="position: absolute; top: 5px; right: 5px; background: rgba(0,0,0,0.2); border: none; border-radius: 50%; width: 25px; height: 25px; cursor: pointer;">×</button>
+                    <p style="margin-top: 20px;">${sticky.text}</p>
+                </div>
+            `).join('');
+        }
+
+        // Calendar Functions
+        function renderCalendar() {
+            const now = new Date();
+            const year = now.getFullYear();
+            const month = now.getMonth();
+            
+            document.getElementById('currentMonth').textContent = 
+                new Date(year, month).toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+
+            const firstDay = new Date(year, month, 1).getDay();
+            const daysInMonth = new Date(year, month + 1, 0).getDate();
+
+            const grid = document.getElementById('calendarGrid');
+            grid.innerHTML = '';
+
+            // Headers
+            ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].forEach(day => {
+                grid.innerHTML += `<div class="calendar-header">${day}</div>`;
+            });
+
+            // Empty cells
+            for (let i = 0; i < firstDay; i++) {
+                grid.innerHTML += `<div class="calendar-day"></div>`;
+            }
+
+            // Days
+            for (let day = 1; day <= daysInMonth; day++) {
+                const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+                const dayEvents = events.filter(e => e.date === dateStr);
+                const hasEvent = dayEvents.length > 0;
+                
+                grid.innerHTML += `
+                    <div class="calendar-day ${hasEvent ? 'has-event' : ''}">
+                        <div class="date">${day}</div>
+                        <div class="events">
+                            ${dayEvents.map(e => `<div>• ${e.title}</div>`).join('')}
+                        </div>
+                    </div>
+                `;
+            }
+        }
+
+        function addEvent() {
+            const title = document.getElementById('eventTitle').value;
+            const date = document.getElementById('eventDate').value;
+            const people = document.getElementById('eventPeople').value;
+            
+            if (!title || !date) {
+                alert('Please fill in title and date');
+                return;
+            }
+
+            events.push({ id: Date.now(), title, date, people: people.split(',').map(p => p.trim()) });
+            localStorage.setItem('events', JSON.stringify(events));
+            
+            document.getElementById('eventTitle').value = '';
+            document.getElementById('eventDate').value = '';
+            document.getElementById('eventPeople').value = '';
+            
+            renderCalendar();
+            speak('Event added to calendar');
+        }
+
+        function applyCalendarBg() {
+            const color = document.getElementById('calBgColor').value;
+            const fileInput = document.getElementById('calBgImage');
+            const calBg = document.getElementById('calendarBg');
+
+            if (fileInput.files.length > 0) {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    calBg.style.backgroundImage = `url(${e.target.result})`;
+                    localStorage.setItem('calBgImage', e.target.result);
+                };
+                reader.readAsDataURL(fileInput.files[0]);
+            } else {
+                calBg.style.backgroundColor = color;
+                calBg.style.backgroundImage = 'none';
+                localStorage.setItem('calBgColor', color);
+            }
+        }
+
+        // Goals Functions
+        function addGoal() {
+            const title = document.getElementById('goalTitle').value;
+            const desc = document.getElementById('goalDesc').value;
+            const date = document.getElementById('goalDate').value;
+            const people = document.getElementById('goalPeople').value;
+            const progress = document.getElementById('goalProgress').value;
+
+            if (!title) {
+                alert('Please enter goal title');
+                return;
+            }
+
+            goals.push({ 
+                id: Date.now(), 
+                title, 
+                desc, 
+                date, 
+                people: people.split(',').map(p => p.trim()),
+                progress: parseInt(progress)
+            });
+            localStorage.setItem('goals', JSON.stringify(goals));
+
+            document.getElementById('goalTitle').value = '';
+            document.getElementById('goalDesc').value = '';
+            document.getElementById('goalDate').value = '';
+            document.getElementById('goalPeople').value = '';
+            document.getElementById('goalProgress').value = '0';
+
+            renderGoals();
+            speak('Goal added');
+        }
+
+        function deleteGoal(id) {
+            goals = goals.filter(g => g.id !== id);
+            localStorage.setItem('goals', JSON.stringify(goals));
+            renderGoals();
+        }
+
+        function renderGoals() {
+            const container = document.getElementById('goalsList');
+            container.innerHTML = goals.map(goal => `
+                <div class="goal-item">
+                    <button onclick="deleteGoal(${goal.id})" style="float: right; background: #e74c3c; color: white; border: none; padding: 5px 15px; border-radius: 5px; cursor: pointer;">Delete</button>
+                    <h3>${goal.title}</h3>
+                    <p>${goal.desc}</p>
+                    <p><strong>Target Date:</strong> ${goal.date || 'Not set'}</p>
+                    <div class="people-tags">
+                        ${goal.people.filter(p => p).map(p => `<span class="person-tag">👤 ${p}</span>`).join('')}
+                    </div>
+                    <div class="goal-progress">
+                        <div class="goal-progress-bar" style="width: ${goal.progress}%"></div>
+                    </div>
+                    <p style="margin-top: 5px; text-align: right; color: #667eea; font-weight: bold;">${goal.progress}%</p>
+                </div>
+            `).join('');
+        }
+
+        // Plans Functions
+        function addPlan() {
+            const title = document.getElementById('planTitle').value;
+            const desc = document.getElementById('planDesc').value;
+            const start = document.getElementById('planStart').value;
+            const end = document.getElementById('planEnd').value;
+            const people = document.getElementById('planPeople').value;
+
+            if (!title) {
+                alert('Please enter plan title');
+                return;
+            }
+
+            plans.push({ 
+                id: Date.now(), 
+                title, 
+                desc, 
+                start, 
+                end,
+                people: people.split(',').map(p => p.trim())
+            });
+            localStorage.setItem('plans', JSON.stringify(plans));
+
+            document.getElementById('planTitle').value = '';
+            document.getElementById('planDesc').value = '';
+            document.getElementById('planStart').value = '';
+            document.getElementById('planEnd').value = '';
+            document.getElementById('planPeople').value = '';
+
+            renderPlans();
+            speak('Plan added');
+        }
+
+        function deletePlan(id) {
+            plans = plans.filter(p => p.id !== id);
+            localStorage.setItem('plans', JSON.stringify(plans));
+            renderPlans();
+        }
+
+        function renderPlans() {
+            const container = document.getElementById('plansList');
+            container.innerHTML = plans.map(plan => `
+                <div class="goal-item">
+                    <button onclick="deletePlan(${plan.id})" style="float: right; background: #e74c3c; color: white; border: none; padding: 5px 15px; border-radius: 5px; cursor: pointer;">Delete</button>
+                    <h3>${plan.title}</h3>
+                    <p>${plan.desc}</p>
+                    <p><strong>Duration:</strong> ${plan.start} → ${plan.end}</p>
+                    <div class="people-tags">
+                        ${plan.people.filter(p => p).map(p => `<span class="person-tag">👤 ${p}</span>`).join('')}
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Initialize
+        renderNotes();
+        renderStickies();
+        renderCalendar();
+        renderGoals();
+        renderPlans();
+
+        // Restore calendar background
+        const savedBgColor = localStorage.getItem('calBgColor');
+        const savedBgImage = localStorage.getItem('calBgImage');
+        if (savedBgImage) {
+            document.getElementById('calendarBg').style.backgroundImage = `url(${savedBgImage})`;
+        } else if (savedBgColor) {
+            document.getElementById('calendarBg').style.backgroundColor = savedBgColor;
+        }
+    </script>
+</body>
+</html>
